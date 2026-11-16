@@ -1,0 +1,228 @@
+import { useState } from "react";
+import { MoveHorizontal } from "lucide-react";
+import { Image } from "@/components/ui/image";
+import { site } from "@/data/siteConfig";
+import { pizzaAddOnsExport, pizzaPremium, pizzaRegular, pizzaSpecialty } from "@/data/menu";
+import { rs } from "@/lib/format";
+import { msgPizza } from "@/lib/whatsapp";
+import { WhatsAppIcon } from "./CTA";
+import PizzaRing from "./PizzaRing";
+import TiltCard from "./TiltCard";
+
+// "Supreme Pizza" -> "supreme-pizza"
+const slug = (text) =>
+  String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+// Your own photo for a specific pizza.
+// 1) Put the file in the  public/images  folder
+// 2) Add a line here:  "pizza-name-as-slug": "/images/file-name.jpg"
+const PIZZA_PHOTOS = {
+  "supreme-pizza": "/images/supreme-pizza.jpg",
+};
+
+// Fallback photos for pizzas that have no own photo.
+// Only pizza pictures here. (site.images.spread shows burgers and wings, so it is NOT used.)
+const FLAVOUR_IMAGES = [
+  site.images.pizzaTikka,
+  site.images.pizzaSupreme,
+  site.images.cheesePull,
+  site.images.crown,
+];
+
+const SPECIALTY_IMAGES = {
+  "hunger-extreme-special": site.images.pizzaSupreme,
+  "crown-crust-pizza": site.images.crown,
+  "square-pizza": site.images.pizzaTikka,
+  "kabab-crust-pizza": site.images.cheesePull,
+  "cheese-crust-pizza": site.images.crown,
+};
+
+const decorate = (list) =>
+  list.map((item, index) => ({
+    ...item,
+    image: PIZZA_PHOTOS[slug(item.name)] || FLAVOUR_IMAGES[index % FLAVOUR_IMAGES.length],
+  }));
+
+const TABS = [
+  { id: "regular", label: "Regular", items: decorate(pizzaRegular) },
+  { id: "premium", label: "Premium", items: decorate(pizzaPremium) },
+  { id: "specialty", label: "Crust Specials" },
+];
+
+export default function PizzaPlanet() {
+  const [tab, setTab] = useState("regular");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [sizeIndex, setSizeIndex] = useState(1);
+
+  const activeTab = TABS.find((item) => item.id === tab);
+  const flavours = activeTab.items || [];
+  const active = flavours[Math.min(activeIndex, flavours.length - 1)] || flavours[0];
+  const size = active?.variants
+    ? active.variants[Math.min(sizeIndex, active.variants.length - 1)]
+    : null;
+
+  return (
+    <section
+      id="pizza"
+      className="relative overflow-hidden bg-hh-ink pb-20 pt-24 md:pb-28 md:pt-32"
+    >
+      <div
+        className="absolute left-1/2 top-10 h-[620px] w-[620px] -translate-x-1/2 rounded-full blur-[140px]"
+        style={{ background: "radial-gradient(circle,rgba(225,44,44,.3),transparent 70%)" }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -right-20 bottom-0 h-[420px] w-[420px] rounded-full blur-[130px]"
+        style={{ background: "radial-gradient(circle,rgba(255,165,0,.24),transparent 70%)" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 mx-auto max-w-[1400px] px-5 md:px-10">
+        <div className="text-center">
+          <p className="hh-label text-hh-gold">Pizza Planet</p>
+          <h2 className="hh-display mt-2 text-[clamp(40px,7vw,96px)] text-hh-cream">
+            PIZZA <span className="hh-gold-text">PLANET</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm font-semibold text-hh-cream/65 md:text-base">
+            Spin the planet, pick your slice.
+          </p>
+        </div>
+
+        <div className="mt-8 flex flex-wrap justify-center gap-2">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setTab(item.id);
+                setActiveIndex(0);
+                setSizeIndex(1);
+              }}
+              aria-pressed={tab === item.id}
+              className={`hh-brand min-h-[44px] rounded-full border-2 px-5 text-sm transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60 ${
+                tab === item.id
+                  ? "border-hh-gold bg-hh-gold text-hh-ink"
+                  : "border-hh-gold/40 text-hh-cream/80 hover:border-hh-gold hover:text-hh-gold"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "specialty" ? (
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {pizzaSpecialty.map((item) => (
+              <TiltCard key={item.id} className="rounded-[26px]">
+                <article className="flex h-full flex-col overflow-hidden rounded-[26px] border border-hh-gold/40 bg-white/[0.04] backdrop-blur-md">
+                  <div className="aspect-[4/3] w-full overflow-hidden">
+                    <Image
+                      src={
+                        PIZZA_PHOTOS[slug(item.name)] ||
+                        SPECIALTY_IMAGES[item.id] ||
+                        site.images.pizzaSupreme
+                      }
+                      alt={item.name}
+                      className="h-full w-full"
+                      fittingType="fill"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="hh-display text-2xl text-hh-cream">{item.name}</h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.variants.map((variant) => (
+                        <a
+                          key={variant.label}
+                          href={msgPizza(item.name, variant.label, variant.price)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-full border border-hh-gold/50 px-3 py-1.5 text-[11px] font-bold text-hh-gold transition-colors hover:bg-hh-gold hover:text-hh-ink"
+                        >
+                          {variant.label} · {rs(variant.price)}
+                        </a>
+                      ))}
+                    </div>
+                    <a
+                      href={msgPizza(item.name, item.variants[0].label, item.variants[0].price)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hh-brand mt-5 flex min-h-[46px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold bg-[#1F7A1F] text-sm text-white"
+                    >
+                      <WhatsAppIcon className="h-4 w-4" />
+                      Order on WhatsApp
+                    </a>
+                  </div>
+                </article>
+              </TiltCard>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-10 grid items-center gap-10 lg:grid-cols-[1.35fr_1fr]">
+            <div>
+              <PizzaRing
+                key={tab}
+                items={flavours}
+                onActiveChange={setActiveIndex}
+              />
+              <p className="mt-2 flex items-center justify-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-hh-cream/40">
+                <MoveHorizontal className="h-4 w-4" />
+                Drag · swipe · arrow keys
+              </p>
+            </div>
+
+            <div className="rounded-[26px] border border-hh-gold/35 bg-white/[0.05] p-6 backdrop-blur-md md:p-7">
+              <p className="hh-label text-hh-gold">Now showing</p>
+              <h3 className="hh-display mt-2 text-[clamp(28px,3.4vw,44px)] text-hh-cream">
+                {active.name}
+              </h3>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {active.variants.map((variant, index) => (
+                  <button
+                    key={variant.label}
+                    type="button"
+                    onClick={() => setSizeIndex(index)}
+                    aria-pressed={index === Math.min(sizeIndex, active.variants.length - 1)}
+                    className={`min-h-[44px] rounded-full border-2 px-4 text-xs font-extrabold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/50 ${
+                      index === Math.min(sizeIndex, active.variants.length - 1)
+                        ? "border-hh-gold bg-hh-gold text-hh-ink"
+                        : "border-hh-gold/35 text-hh-cream/75 hover:border-hh-gold hover:text-hh-gold"
+                    }`}
+                  >
+                    {variant.label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="hh-brand mt-6 text-[44px] leading-none text-hh-gold">
+                {size ? rs(size.price) : "—"}
+              </p>
+
+              <p className="mt-4 text-[11px] font-extrabold uppercase leading-relaxed tracking-[0.16em] text-hh-cream/45">
+                Add-ons:{" "}
+                {pizzaAddOnsExport.map((addOn) => `${addOn.name} ${rs(addOn.price)}`).join(" · ")}
+              </p>
+
+              <a
+                href={
+                  size
+                    ? msgPizza(active.name, size.label, size.price)
+                    : msgPizza(active.name, "", active.variants[0].price)
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hh-brand mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-[3px] border-hh-gold bg-[#1F7A1F] px-5 text-base text-white transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60"
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+                Order on WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
