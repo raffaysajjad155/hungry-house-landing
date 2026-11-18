@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu as MenuIcon, X } from "lucide-react";
 import LogoBadge from "./LogoBadge";
 import { WhatsAppIcon } from "./CTA";
+import { CartButton } from "./CartDrawer";
 import { site } from "@/data/siteConfig";
 import { msgGeneric, waLink } from "@/lib/whatsapp";
 
@@ -87,6 +88,7 @@ export default function Nav() {
               <WhatsAppIcon className="h-4 w-4" />
               Order on WhatsApp
             </a>
+            <CartButton />
             <button
               type="button"
               onClick={() => setOpen(true)}

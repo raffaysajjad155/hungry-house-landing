@@ -1,8 +1,7 @@
 import { midnightDeals } from "@/data/menu";
 import { rs } from "@/lib/format";
 import { formatRemaining, useMidnightStatus } from "@/lib/useMidnightStatus";
-import { msgMidnight } from "@/lib/whatsapp";
-import { WhatsAppIcon } from "./CTA";
+import { AddToCartButton } from "./CartDrawer";
 import StarField from "./StarField";
 import Wave from "./Wave";
 
@@ -83,21 +82,22 @@ export default function Midnight() {
                 {deal.includes.join(" + ")}
               </p>
               <p className="hh-brand mt-5 text-[38px] leading-none text-hh-gold">{rs(deal.price)}</p>
-              <a
-                href={msgMidnight(deal)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hh-brand mt-6 flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold bg-[#1F7A1F] text-sm text-white transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/50"
-              >
-                <WhatsAppIcon className="h-4 w-4" />
-                Order on WhatsApp
-              </a>
+              <AddToCartButton
+                item={{
+                  id: `midnight-${deal.id ?? deal.name ?? index + 1}`,
+                  name: `Midnight Deal ${deal.name}`,
+                  desc: deal.includes.join(" + "),
+                  price: deal.price,
+                }}
+                label="Add to cart"
+                className="mt-6 min-h-[48px] w-full"
+              />
             </article>
           ))}
         </div>
 
         <p className="mt-6 text-center text-[10px] font-extrabold uppercase tracking-[0.18em] text-hh-cream/35">
-          Midnight deals are orderable outside the window too — just mention “Midnight deal” on WhatsApp.
+          Midnight deals are orderable outside the window too — add them to your cart any time.
         </p>
       </div>
     </section>

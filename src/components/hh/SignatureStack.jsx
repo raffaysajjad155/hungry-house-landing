@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { useMotionValueEvent, useScroll } from "framer-motion";
 import { Image } from "@/components/ui/image";
 import { site } from "@/data/siteConfig";
-import { msgItem, msgPizza } from "@/lib/whatsapp";
-import { WhatsAppIcon } from "./CTA";
+import { AddToCartButton } from "./CartDrawer";
 
+// "cart" = the exact item that goes into the cart when the button is pressed
 const SCENES = [
   {
     key: "zinger",
@@ -15,7 +15,7 @@ const SCENES = [
     bg: "#D40000",
     tone: "light",
     line: "Crunch loud. Order louder.",
-    href: msgItem("Zinger Burger", 400),
+    cart: { id: "fav-zinger", name: "Zinger Burger", price: 400 },
   },
   {
     key: "smash",
@@ -26,18 +26,18 @@ const SCENES = [
     bg: "#FFD700",
     tone: "ink",
     line: "Smashed, stacked, sorted.",
-    href: msgItem("Classic Beef Burger", 680, "Single Patty"),
+    cart: { id: "fav-smash", name: "Classic Beef Burger", price: 680, variant: "Single Patty" },
   },
   {
     key: "pizza",
     word: "PIZZA",
     title: "Hunger Extreme Special",
-    from: "M Rs 1350",
+    from: "Rs 1350",
     image: site.images.pizzaSupreme,
     bg: "#2D9B2B",
     tone: "ink",
     line: "Cheese pull champions.",
-    href: msgPizza("Hunger Extreme Special", "Medium", 1350),
+    cart: { id: "fav-hunger-extreme", name: "Hunger Extreme Special", price: 1350, variant: "Medium" },
   },
   {
     key: "wings",
@@ -48,7 +48,7 @@ const SCENES = [
     bg: "#FFA500",
     tone: "ink",
     line: "Hot, BBQ or honey — pick your fire.",
-    href: msgItem("Hot Wings", 380, "6 Pcs"),
+    cart: { id: "fav-hot-wings", name: "Hot Wings", price: 380, variant: "6 Pcs" },
   },
   {
     key: "fries",
@@ -59,7 +59,7 @@ const SCENES = [
     bg: "#140A08",
     tone: "light",
     line: "Loaded. Layered. Gone.",
-    href: msgItem("Loaded Fries", 650),
+    cart: { id: "fav-loaded-fries", name: "Loaded Fries", price: 650 },
   },
 ];
 
@@ -102,7 +102,7 @@ export default function SignatureStack() {
               </p>
               <h2
                 className="hh-display mt-3 text-[clamp(38px,6vw,84px)]"
-                style={{ color: isLight ? "#FFF4DC" : "#140A08" }}
+                style={{ color: isLight ? "#FFF4DC" : "#140A08", lineHeight: 1.12 }}
               >
                 {scene.title}
               </h2>
@@ -119,15 +119,11 @@ export default function SignatureStack() {
                 >
                   from {scene.from}
                 </span>
-                <a
-                  href={scene.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hh-brand inline-flex min-h-[50px] items-center gap-2 rounded-full border-[3px] border-hh-gold bg-[#1F7A1F] px-6 text-sm text-white transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60"
-                >
-                  <WhatsAppIcon className="h-4 w-4" />
-                  Order on WhatsApp
-                </a>
+                <AddToCartButton
+                  item={scene.cart}
+                  label="Add to cart"
+                  className="min-h-[50px] border-[3px] px-6"
+                />
               </div>
             </div>
 

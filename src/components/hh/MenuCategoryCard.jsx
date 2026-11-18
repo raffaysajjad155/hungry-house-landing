@@ -1,7 +1,78 @@
-import { Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Plus } from "lucide-react";
 import { Image } from "@/components/ui/image";
 import { rs } from "@/lib/format";
-import { msgItem } from "@/lib/whatsapp";
+import { useCart } from "@/lib/cart";
+
+/* Shows a tick for a moment after an item is added. */
+function useAddedFlash() {
+  const [added, setAdded] = useState(false);
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const flash = () => {
+    setAdded(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setAdded(false), 1200);
+  };
+  return [added, flash];
+}
+
+function cartItemFor(item, variant) {
+  return {
+    id: item.id,
+    name: item.name,
+    desc: item.includes ? item.includes.join(" + ") : "",
+    price: variant ? variant.price : item.price,
+    variant: variant ? variant.label : "",
+  };
+}
+
+function VariantChip({ item, variant }) {
+  const { addItem } = useCart();
+  const [added, flash] = useAddedFlash();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        addItem(cartItemFor(item, variant), false);
+        flash();
+      }}
+      aria-label={`Add ${item.name} ${variant.label} to cart`}
+      className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors hover:border-[#D40000] hover:bg-[#D40000] hover:text-white ${
+        added
+          ? "border-[#D40000] bg-[#D40000] text-white"
+          : "border-[#D40000]/30 bg-white/70 text-hh-ink"
+      }`}
+    >
+      {added ? "Added" : `${variant.label} · ${rs(variant.price)}`}
+    </button>
+  );
+}
+
+function PlusButton({ item }) {
+  const { addItem } = useCart();
+  const [added, flash] = useAddedFlash();
+  const first = item.variants ? item.variants[0] : null;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        addItem(cartItemFor(item, first), false);
+        flash();
+      }}
+      aria-label={`Add ${item.name} to cart`}
+      className={`mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[#D40000] transition-colors hover:bg-[#D40000] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hh-ink ${
+        added ? "bg-[#D40000] text-white" : "text-[#D40000]"
+      }`}
+    >
+      {added ? (
+        <Check className="h-4 w-4" strokeWidth={3} />
+      ) : (
+        <Plus className="h-4 w-4" strokeWidth={3} />
+      )}
+    </button>
+  );
+}
 
 export default function MenuCategoryCard({ category, image }) {
   return (
@@ -37,15 +108,7 @@ export default function MenuCategoryCard({ category, image }) {
               {item.variants && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {item.variants.map((variant) => (
-                    <a
-                      key={variant.label}
-                      href={msgItem(item.name, variant.price, variant.label)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-full border border-[#D40000]/30 bg-white/70 px-2.5 py-1 text-[10px] font-bold text-hh-ink transition-colors hover:border-[#D40000] hover:bg-[#D40000] hover:text-white"
-                    >
-                      {variant.label} · {rs(variant.price)}
-                    </a>
+                    <VariantChip key={variant.label} item={item} variant={variant} />
                   ))}
                 </div>
               )}
@@ -55,19 +118,7 @@ export default function MenuCategoryCard({ category, image }) {
               )}
             </div>
 
-            <a
-              href={msgItem(
-                item.name,
-                item.variants ? item.variants[0].price : item.price,
-                item.variants ? item.variants[0].label : ""
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Order ${item.name} on WhatsApp`}
-              className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[#D40000] text-[#D40000] transition-colors hover:bg-[#D40000] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hh-ink"
-            >
-              <Plus className="h-4 w-4" strokeWidth={3} />
-            </a>
+            <PlusButton item={item} />
           </li>
         ))}
       </ul>

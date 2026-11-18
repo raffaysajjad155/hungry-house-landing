@@ -4,8 +4,7 @@ import { Image } from "@/components/ui/image";
 import { site } from "@/data/siteConfig";
 import { pizzaAddOnsExport, pizzaPremium, pizzaRegular, pizzaSpecialty } from "@/data/menu";
 import { rs } from "@/lib/format";
-import { msgPizza } from "@/lib/whatsapp";
-import { WhatsAppIcon } from "./CTA";
+import { AddToCartButton } from "./CartDrawer";
 import PizzaRing from "./PizzaRing";
 import TiltCard from "./TiltCard";
 
@@ -21,7 +20,12 @@ const slug = (text) =>
 // 2) Add a line here:  "pizza-name-as-slug": "/images/file-name.jpg"
 const PIZZA_PHOTOS = {
   "supreme-pizza": "/images/supreme-pizza.jpg",
+  "square-pizza": "/images/square-pizza.jpg",
 };
+
+// Photos that are a pizza on a plain black / transparent background.
+// They are blended into the card instead of showing a black box.
+const CUTOUT_PHOTOS = ["square-pizza"];
 
 // Fallback photos for pizzas that have no own photo.
 // Only pizza pictures here. (site.images.spread shows burgers and wings, so it is NOT used.)
@@ -51,6 +55,85 @@ const TABS = [
   { id: "premium", label: "Premium", items: decorate(pizzaPremium) },
   { id: "specialty", label: "Crust Specials" },
 ];
+
+/* One Crust Special card: pick a size, then Add to cart */
+function SpecialtyCard({ item }) {
+  const [picked, setPicked] = useState(0);
+  const variant = item.variants[Math.min(picked, item.variants.length - 1)];
+
+  return (
+    <TiltCard className="rounded-[26px]">
+      <article className="flex h-full flex-col overflow-hidden rounded-[26px] border border-hh-gold/40 bg-white/[0.04] backdrop-blur-md">
+        {CUTOUT_PHOTOS.includes(slug(item.name)) ? (
+          <div
+            className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 55%, rgba(225,44,44,.32), rgba(255,165,0,.10) 45%, rgba(20,10,8,0) 72%), #1A0F0C",
+            }}
+          >
+            <img
+              src={PIZZA_PHOTOS[slug(item.name)]}
+              alt={item.name}
+              loading="lazy"
+              className="h-full w-full scale-[1.12] object-contain"
+              style={{
+                mixBlendMode: "screen",
+                filter: "drop-shadow(0 18px 28px rgba(0,0,0,.55))",
+              }}
+            />
+          </div>
+        ) : (
+          <div className="aspect-[4/3] w-full overflow-hidden">
+            <Image
+              src={
+                PIZZA_PHOTOS[slug(item.name)] ||
+                SPECIALTY_IMAGES[item.id] ||
+                site.images.pizzaSupreme
+              }
+              alt={item.name}
+              className="h-full w-full"
+              fittingType="fill"
+            />
+          </div>
+        )}
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="hh-display text-2xl text-hh-cream">{item.name}</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {item.variants.map((option, index) => {
+              const selected = index === Math.min(picked, item.variants.length - 1);
+              return (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={() => setPicked(index)}
+                  aria-pressed={selected}
+                  className={`rounded-full border px-3 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/50 ${
+                    selected
+                      ? "border-hh-gold bg-hh-gold text-hh-ink"
+                      : "border-hh-gold/50 text-hh-gold hover:bg-hh-gold hover:text-hh-ink"
+                  }`}
+                >
+                  {option.label} · {rs(option.price)}
+                </button>
+              );
+            })}
+          </div>
+          <AddToCartButton
+            item={{
+              id: item.id ?? slug(item.name),
+              name: item.name,
+              price: variant.price,
+              variant: variant.label,
+            }}
+            label="Add to cart"
+            className="mt-5 min-h-[46px] w-full"
+          />
+        </div>
+      </article>
+    </TiltCard>
+  );
+}
 
 export default function PizzaPlanet() {
   const [tab, setTab] = useState("regular");
@@ -116,47 +199,7 @@ export default function PizzaPlanet() {
         {tab === "specialty" ? (
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pizzaSpecialty.map((item) => (
-              <TiltCard key={item.id} className="rounded-[26px]">
-                <article className="flex h-full flex-col overflow-hidden rounded-[26px] border border-hh-gold/40 bg-white/[0.04] backdrop-blur-md">
-                  <div className="aspect-[4/3] w-full overflow-hidden">
-                    <Image
-                      src={
-                        PIZZA_PHOTOS[slug(item.name)] ||
-                        SPECIALTY_IMAGES[item.id] ||
-                        site.images.pizzaSupreme
-                      }
-                      alt={item.name}
-                      className="h-full w-full"
-                      fittingType="fill"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="hh-display text-2xl text-hh-cream">{item.name}</h3>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {item.variants.map((variant) => (
-                        <a
-                          key={variant.label}
-                          href={msgPizza(item.name, variant.label, variant.price)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full border border-hh-gold/50 px-3 py-1.5 text-[11px] font-bold text-hh-gold transition-colors hover:bg-hh-gold hover:text-hh-ink"
-                        >
-                          {variant.label} · {rs(variant.price)}
-                        </a>
-                      ))}
-                    </div>
-                    <a
-                      href={msgPizza(item.name, item.variants[0].label, item.variants[0].price)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hh-brand mt-5 flex min-h-[46px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold bg-[#1F7A1F] text-sm text-white"
-                    >
-                      <WhatsAppIcon className="h-4 w-4" />
-                      Order on WhatsApp
-                    </a>
-                  </div>
-                </article>
-              </TiltCard>
+              <SpecialtyCard key={item.id} item={item} />
             ))}
           </div>
         ) : (
@@ -206,19 +249,16 @@ export default function PizzaPlanet() {
                 {pizzaAddOnsExport.map((addOn) => `${addOn.name} ${rs(addOn.price)}`).join(" · ")}
               </p>
 
-              <a
-                href={
-                  size
-                    ? msgPizza(active.name, size.label, size.price)
-                    : msgPizza(active.name, "", active.variants[0].price)
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hh-brand mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-[3px] border-hh-gold bg-[#1F7A1F] px-5 text-base text-white transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60"
-              >
-                <WhatsAppIcon className="h-5 w-5" />
-                Order on WhatsApp
-              </a>
+              <AddToCartButton
+                item={{
+                  id: active.id ?? slug(active.name),
+                  name: active.name,
+                  price: size ? size.price : active.variants[0].price,
+                  variant: size ? size.label : active.variants[0].label,
+                }}
+                label="Add to cart"
+                className="mt-6 min-h-[52px] w-full border-[3px] px-5 text-base"
+              />
             </div>
           </div>
         )}

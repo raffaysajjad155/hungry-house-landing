@@ -3,13 +3,20 @@ import { useInView } from "framer-motion";
 import { Check } from "lucide-react";
 import TiltCard from "./TiltCard";
 import { useCountUp, rs } from "@/lib/format";
-import { msgDeal } from "@/lib/whatsapp";
 import { WhatsAppIcon } from "./CTA";
+import { AddToCartButton } from "./CartDrawer";
 
 export default function DealCard({ deal, index }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.35 });
   const price = useCountUp(deal.price, inView);
+
+  const cartItem = {
+    id: deal.id ?? deal.name ?? `deal-${index + 1}`,
+    name: deal.name ?? `Deal ${String(index + 1).padStart(2, "0")}`,
+    desc: deal.includes.join(" + "),
+    price: deal.price,
+  };
 
   return (
     <div ref={ref} className="h-full">
@@ -44,15 +51,7 @@ export default function DealCard({ deal, index }) {
             ))}
           </ul>
 
-          <a
-            href={msgDeal(deal)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hh-brand mt-6 flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold bg-[#1F7A1F] px-5 text-sm text-white transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60"
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-            Order this deal
-          </a>
+          <AddToCartButton item={cartItem} label="Add to cart" className="mt-6 min-h-[48px] w-full" />
         </article>
       </TiltCard>
     </div>
