@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { rs } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
@@ -44,14 +44,28 @@ export function CartButton({ className = "" }) {
 /* Card button: <AddToCartButton item={{ id, name, price, desc, variant }} /> */
 export function AddToCartButton({ item, label = "Add to cart", className = "" }) {
   const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const handleClick = () => {
+    addItem(item);
+    setAdded(true);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setAdded(false), 1000);
+  };
+
   return (
     <button
       type="button"
-      onClick={() => addItem(item)}
-      className={`hh-brand inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold bg-[#1F7A1F] px-5 text-sm text-white transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60 ${className}`}
+      onClick={handleClick}
+      className={`hh-brand inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border-2 border-hh-gold px-5 text-sm text-white transition-all hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-hh-gold/60 ${
+        added ? "bg-hh-gold text-hh-ink" : "bg-[#1F7A1F]"
+      } ${className}`}
     >
-      <ShoppingBag className="h-4 w-4" />
-      {label}
+      {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
+      <span aria-live="polite">{added ? "Added" : label}</span>
     </button>
   );
 }

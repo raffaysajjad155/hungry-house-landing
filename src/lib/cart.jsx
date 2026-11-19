@@ -26,7 +26,7 @@ export function CartProvider({ children }) {
   }, [items]);
 
   // item: { id, name, desc?, price, variant? }
-  const addItem = useCallback((item, openDrawer = true) => {
+  const addItem = useCallback((item, openDrawer = false) => {
     const key = `${item.id}::${item.variant || ""}`;
     setItems((prev) => {
       const found = prev.find((entry) => entry.key === key);
