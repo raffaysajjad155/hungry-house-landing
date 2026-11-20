@@ -7,7 +7,8 @@ import { WhatsAppIcon } from "./CTA";
 
 function buildOrderMessage(items, subtotal) {
   const lines = items.map(
-    (item, index) => `${index + 1}. ${item.name} x${item.qty} - ${rs(item.price * item.qty)}`
+    (item, index) =>
+      `${index + 1}. ${item.name}${item.desc ? ` (${item.desc})` : ""} x${item.qty} - ${rs(item.price * item.qty)}`
   );
   return [
     "Hi Hungry House! I'd like to place this order:",
