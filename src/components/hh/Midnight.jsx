@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import { midnightDeals } from "@/data/menu";
 import { rs } from "@/lib/format";
 import { formatRemaining, useMidnightStatus } from "@/lib/useMidnightStatus";
@@ -66,9 +67,17 @@ export default function Midnight() {
               </span>
             )}
           </div>
+
+          <p className="mt-6 inline-flex max-w-xl items-start gap-2.5 rounded-2xl border border-hh-gold/45 bg-hh-gold/10 px-4 py-3 text-left text-xs font-bold leading-snug text-hh-cream/90 md:text-sm">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-hh-gold md:h-5 md:w-5" aria-hidden="true" />
+            <span>
+              Pizza in these deals: <span className="text-hh-gold">Regular flavours only.</span>{" "}
+              Premium flavours and Crust Special pizzas are not included.
+            </span>
+          </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
           {midnightDeals.map((deal, index) => (
             <article
               key={deal.id}

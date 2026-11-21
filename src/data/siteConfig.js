@@ -6,8 +6,8 @@ export const site = {
   // Orders / WhatsApp (international format, no plus)
   waNumber: "923094807000",
   waDisplay: "0309 4807000",
-  phone2: "+923122672193",
-  phone2Display: "0312 2672193",
+  phone2: "+923094807000",
+  phone2Display: "0309 4807000",
 
   address: "Jamshed Arcade, MPS Road, Near Northern Bypass, Multan",
   city: "Multan",
